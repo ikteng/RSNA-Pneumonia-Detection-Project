@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Constants
-IMAGE_NUMBER = 4000  # Number of images to process
+IMAGE_NUMBER = 2000  # Number of images to process
 IMAGE_SIZE = 224
 ZIP_FILE = "rsna-pneumonia-detection-challenge.zip"  # Path to the zip file
 EXTRACT_DIR = "rsna-pneumonia-detector/data"  # Directory to extract the zip file contents
