@@ -1,118 +1,109 @@
 # predictions.py
 import numpy as np
 from tensorflow.keras.models import load_model
+import pandas as pd
 
-# Constants
+# Constants for configuring the data and model paths
 IMAGE_NUMBER = 2000
 IMAGE_SIZE = 224
-model_type="model1"
-version = "version 1"
+EPOCHS = 30
+datagen = 30
 
-DATA_DIR = f"{version}/processed_data_{IMAGE_SIZE}-{IMAGE_NUMBER}"
-MODEL_DIR1 = f"{version}/model1-{IMAGE_NUMBER}-{IMAGE_SIZE}.keras"
-MODEL_DIR2 = f"{version}/model2-{IMAGE_NUMBER}-{IMAGE_SIZE}.keras"
-MODEL_DIR=f"{model_type}-{IMAGE_NUMBER}-{IMAGE_SIZE}.keras"
+DATA_DIR = f"rsna-pneumonia-detector/processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}-{datagen}"
+DENSENET_MODEL_DIR = f"rsna-pneumonia-detector/models/densenet/densenet_model_fine-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
+RESENET_MODEL_DIR = f"rsna-pneumonia-detector/models/resnet/resnet_model_fine-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
 
-# Load Test Data
-print("Loading Test Images...")
-X_test = np.load(f"test_images_{IMAGE_SIZE}.npy")  # Adjust filename as needed
-print(f"Test Images Loaded: {X_test.shape}")
+# Load the test data
+print("Loading the test data...")
+X_test = np.load(f"test_images_{IMAGE_SIZE}.npy")
+print("Test data loaded successfully.")
 
-# Load Pre-trained Models
-print("Loading Models...")
-model = load_model(MODEL_DIR)
-model1 = load_model(MODEL_DIR1)  
-model2 = load_model(MODEL_DIR2)
-print("Models Loaded Successfully!")
-
-# Summary of the model
-print("Summary of Models")
-model1.summary()
-model2.summary()
+# Load the pre-trained models
+print("Loading the pre-trained models...")
+# model = load_model(MODEL_DIR)
+densenet_model = load_model(DENSENET_MODEL_DIR)
+resnet_model = load_model(RESENET_MODEL_DIR)
+print("Pre-trained models loaded successfully.")
 
 def run_prediction():
-    # Generate predictions
-    print("Generating Predictions on Test Data...")
+    model = densenet_model
+    model_name = "densnet_model"
+
+    print(f"Generating predictions using {model_name}...")
     test_predictions = model.predict(X_test)
     pred_class = (test_predictions > 0.5).astype(int)
+    print(f"Predictions using {model_name} generated successfully.")
 
-    print("Predictions Generated!")
+    # Generate patient IDs based on index (you can change this if you have other ID generation logic)
+    patient_ids = [f"patient_{i}" for i in range(len(X_test))]
 
-    # Example output
-    print("Sample Predictions:")
-    for i in range(5):  # Show a few predictions
-        print(f"Predicted: {pred_class[i][0]}, Probability: {test_predictions[i][0]:.4f}")
+    # Prepare data for the new file with detailed predictions
+    prediction_data = []
+    print(f"Preparing detailed prediction data for {model_name} predictions...")
+    for i in range(len(X_test)):
+        patient_id = patient_ids[i]
+        predicted_class = pred_class[i][0]
+        probability = test_predictions[i][0]
+        prediction_data.append([patient_id, predicted_class, probability])
 
-# run_prediction()
+    print("Creating a DataFrame with detailed prediction data for single model predictions...")
+    columns = ["PatientID", "PredictedClass", "Probability"]
+    prediction_df = pd.DataFrame(prediction_data, columns=columns)
 
-# Function for Ensemble Predictions (Averaging)
-def ensemble_predictions(models, X_test):
-    """
-    Generates ensemble predictions by averaging the outputs of all models.
-    
-    Parameters:
-        models (list): List of trained models.
-        X_test (ndarray): Test data.
-    
-    Returns:
-        ndarray: Averaged predictions.
-    """
-    predictions = []
-    for model in models:
-        pred = model.predict(X_test, verbose=0)
-        predictions.append(pred)
+    print("Saving detailed prediction data for single model predictions to a file...")
+    prediction_df.to_csv(f"{model_name}_predictions.csv", index=False)
+    print(f"File '{model_name}_predictions.csv' with detailed predictions has been created successfully!")
 
-    # Convert to numpy array and compute the mean
-    predictions = np.array(predictions)
-    ensemble_pred = np.mean(predictions, axis=0)  # Averaging predictions
-
-    return ensemble_pred
-
-# Function for Weighted Ensemble Predictions
-def ensemble_predictions_weighted(models, X_test, weights):
-    """
-    Generates weighted ensemble predictions.
-    
-    Parameters:
-        models (list): List of trained models.
-        X_test (ndarray): Test data.
-        weights (list): Weights for each model.
-    
-    Returns:
-        ndarray: Weighted averaged predictions.
-    """
-    predictions = []
-    for model in models:
-        pred = model.predict(X_test, verbose=0)
-        predictions.append(pred)
-
-    # Weighted averaging
-    predictions = np.array(predictions)
-    weights = np.array(weights).reshape(-1, 1, 1)  # Reshape to match predictions
-    ensemble_pred = np.sum(predictions * weights, axis=0) / np.sum(weights)
-
-    return ensemble_pred
-
-def run_ensemble_preidctions():
-    # Models List
-    models = [model1, model2]
-
-    # Averaging Ensemble Predictions
-    print("Generating Averaged Ensemble Predictions...")
-    ensemble_pred_avg = ensemble_predictions(models, X_test)
-
-    # Weighted Ensemble Predictions
-    weights = [0.4, 0.35, 0.25]  # Example weights based on model performance
-    print("Generating Weighted Ensemble Predictions...")
+def run_ensemble_predictions():
+    print("Generate weighted ensemble predictions...")
+    models = [densenet_model, resnet_model]
+    weights = [0.5, 0.5]
+    print("Calculating weighted ensemble predictions...")
     ensemble_pred_weighted = ensemble_predictions_weighted(models, X_test, weights)
+    print("Weighted ensemble predictions calculated successfully.")
 
-    # Display Predictions
-    print("Sample Predictions from Averaged Ensemble:")
-    for i in range(5):  # Display the first 5 predictions
-        print(f"Image {i+1}: Probability: {ensemble_pred_avg[i][0]:.4f}")
+    # Generate patient IDs based on index (you can change this if you have other ID generation logic)
+    patient_ids = [f"patient_{i}" for i in range(len(X_test))]
 
-    print("\nSample Predictions from Weighted Ensemble:")
-    for i in range(5):  # Display the first 5 predictions
-        print(f"Image {i+1}: Probability: {ensemble_pred_weighted[i][0]:.4f}")
+    # Display sample predictions
+    print("Showing sample predictions:")
+    num_samples_to_show = 5  # You can adjust this number to show more or fewer samples
+    for i in range(min(num_samples_to_show, len(X_test))):
+        patient_id = patient_ids[i]
+        predicted_class = 1 if ensemble_pred_weighted[i][0] >= 0.5 else 0
+        probability = ensemble_pred_weighted[i][0]
+        print(f"Patient ID: {patient_id}, Predicted Class: {predicted_class}, Probability: {probability:.4f}")
 
-run_ensemble_preidctions()
+    # Prepare data for the new file with detailed predictions
+    prediction_data = []
+    print("Preparing detailed prediction data...")
+    for i in range(len(X_test)):
+        patient_id = patient_ids[i]
+        predicted_class = 1 if ensemble_pred_weighted[i][0] >= 0.5 else 0
+        probability = ensemble_pred_weighted[i][0]
+        prediction_data.append([patient_id, predicted_class, probability])
+
+    print("Creating a DataFrame with detailed prediction data...")
+    columns = ["PatientID", "PredictedClass", "Probability"]
+    prediction_df = pd.DataFrame(prediction_data, columns=columns)
+
+    print("Saving detailed prediction data to a file...")
+    prediction_df.to_csv("predictions.csv", index=False)
+    print("File 'predictions.csv' with detailed predictions has been created successfully!")
+
+# Generate weighted ensemble predictions based on the provided weights for each model.
+def ensemble_predictions_weighted(models, X_test, weights):
+    print("Generating individual predictions for weighted ensemble...")
+    predictions = [model.predict(X_test, verbose=0) for model in models]
+    predictions = np.array(predictions)
+    print("Individual predictions generated. Now reshaping weights for calculation...")
+    weights = np.array(weights).reshape(-1, 1, 1)
+    print("Calculating weighted ensemble prediction using the provided weights...")
+    result = np.sum(predictions * weights, axis=0) / np.sum(weights)
+    print("Weighted ensemble prediction calculation completed.")
+    return result
+
+if __name__ == "__main__":
+    run_prediction()
+    # run_ensemble_predictions()
+    print("Predictions Completed!")
