@@ -15,7 +15,6 @@ import seaborn as sns
 
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
-# remember that you need to use python 3.11!
 
 # Constants
 IMAGE_NUMBER = 2000  # Number of images to process
