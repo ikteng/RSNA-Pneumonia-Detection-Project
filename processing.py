@@ -21,8 +21,8 @@ import seaborn as sns
 IMAGE_NUMBER = 2000  # Number of images to process
 IMAGE_SIZE = 224
 ZIP_FILE = "rsna-pneumonia-detection-challenge.zip"  # Path to the zip file
-EXTRACT_DIR = "rsna-pneumonia-detector/data"  # Directory to extract the zip file contents
-SAVE_DIR = f"rsna-pneumonia-detector/processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"  # Directory to save processed data
+EXTRACT_DIR = "data"  # Directory to extract the zip file contents
+SAVE_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"  # Directory to save processed data
 
 # Ensure output directories exist
 os.makedirs(SAVE_DIR, exist_ok=True)
@@ -114,7 +114,7 @@ def load_test_images():
         return img_resized
 
     # Directory containing the test DICOM images
-    test_image_dir = 'dataset/stage_2_test_images'
+    test_image_dir = os.path.join(EXTRACT_DIR, "stage_2_test_images")
 
     # List all DICOM images in the test directory
     test_image_filenames = os.listdir(test_image_dir)
@@ -143,8 +143,6 @@ def load_test_images():
     # Save the processed images to a .npy file
     np.save(f'test_images_{IMAGE_SIZE}.npy', test_images)
     print(f"Test images saved successfully as 'test_images_{IMAGE_SIZE}.npy'.")
-
-# load_test_images() # uncomment this to load the test images!
 
 def analyze_pixel_distribution(images):
     """
@@ -203,14 +201,17 @@ def prepare_data():
     if not os.path.exists(labels_file):
         raise FileNotFoundError(f"Labels file not found: {labels_file}")
 
-    # Step 4: Load labels
+    # Step 4: Load Test images
+    load_test_images() # uncomment this to load the test images!
+
+    # Step 5: Load labels
     labels = pd.read_csv(labels_file)
     print(f"Total labels: {len(labels)}")
     print(f"Label distribution:\n{labels['Target'].value_counts()}")
     # Add EDA for label distribution
     analyze_label_distribution(labels['Target'])
 
-    # Step 5: Load and preprocess images
+    # Step 6: Load and preprocess images
     images, labels_filtered = zip(*load_images(dicom_dir, labels, IMAGE_NUMBER))
     images = np.array(images, dtype=np.float32)
     labels_filtered = np.array(labels_filtered, dtype=np.int32)
@@ -218,12 +219,13 @@ def prepare_data():
     print(f"Total images processed: {len(images)}")
     print(f"Images shape: {images.shape}")
     print(f"Labels shape: {labels_filtered.shape}")
+
     # Add EDA for pixel value distribution
     analyze_pixel_distribution(images)
     # Add EDA for image dimensions
     analyze_image_dimensions(images)
 
-    # Step 6: Split and handle class imbalance
+    # Step 7: Split and handle class imbalance
     X_train, X_val, y_train, y_val = train_test_split(images, labels_filtered, test_size=0.2, stratify=labels_filtered)
     print(f"Training set size: {X_train.shape[0]}, Validation set size: {X_val.shape[0]}")
 
@@ -231,12 +233,12 @@ def prepare_data():
     class_weight_dict = dict(enumerate(class_weights))
     print(f"Class weights:\n{class_weight_dict}")
 
-    # Step 7: Save validation sets
+    # Step 8: Save validation sets
     print("Saving Validation sets...")
     np.save(os.path.join(SAVE_DIR, "X_val.npy"), X_val)
     np.save(os.path.join(SAVE_DIR, "y_val.npy"), y_val)
 
-    # Step 8: Apply SMOTE for the training set
+    # Step 9: Apply SMOTE for the training set
     print("Applying SMOTE...")
     smote = SMOTE(sampling_strategy='auto', random_state=42)
     X_train_res, y_train_res = smote.fit_resample(X_train.reshape(X_train.shape[0], -1), y_train)
@@ -244,7 +246,7 @@ def prepare_data():
 
     print(f"Resampled training set class distribution:\n{pd.Series(y_train_res).value_counts()}")
 
-    # Step 9: Save training sets
+    # Step 10: Save training sets
     print("Saving Training sets...")
     np.save(os.path.join(SAVE_DIR, "X_train.npy"), X_train_res)
     np.save(os.path.join(SAVE_DIR, "y_train.npy"), y_train_res)
