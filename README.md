@@ -4,6 +4,8 @@ Dataset: https://www.kaggle.com/competitions/rsna-pneumonia-detection-challenge/
 ## Overview
 This project is focused on developing a pneumonia detection system using deep learning techniques. It aims to analyze chest X-ray images to identify the presence of pneumonia. The project includes several key components for data processing, model building (using different architectures like DenseNet and ResNet), model evaluation, and ensemble prediction to enhance the accuracy and reliability of the results.
 
+Note: You need to use at most Python 3.11 for the tensorflow library!
+
 ## Project Structure and Files
 ### 1. processing.py
 * Data Extraction: The extract_zip function is used to extract a zip file (specified by ZIP_FILE) to a designated directory (EXTRACT_DIR). It checks if the extraction has already been done and proceeds accordingly.
