@@ -18,7 +18,7 @@ IMAGE_NUMBER = 2000  # Number of images to process
 IMAGE_SIZE = 224
 ZIP_FILE = "rsna-pneumonia-detection-challenge.zip"  # Path to the zip file
 EXTRACT_DIR = "rsna-pneumonia-detector/data"  # Directory to extract the zip file contents
-SAVE_DIR = f"rsna-pneumonia-detector/processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}-30"  # Directory to save processed data
+SAVE_DIR = f"rsna-pneumonia-detector/processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"  # Directory to save processed data
 
 # Ensure output directories exist
 os.makedirs(SAVE_DIR, exist_ok=True)
