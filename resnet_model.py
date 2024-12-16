@@ -19,11 +19,9 @@ IMAGE_SIZE = 224
 
 EPOCHS = 30
 BATCH_SIZE = 32
-datagen = 30
 
-DATA_DIR = f"rsna-pneumonia-detector/processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}-{datagen}"
-# MODEL_PATH = f"rsna-pneumonia-detector/models/resnet/resnet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
-MODEL_PATH = f"rsna-pneumonia-detector/models/resnet/resnet_model_fine-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
+DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
+MODEL_PATH = f"models/resnet/resnet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
 
 # Load data
 print("Loading data...")
