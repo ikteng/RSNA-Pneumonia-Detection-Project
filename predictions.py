@@ -9,9 +9,9 @@ IMAGE_SIZE = 224
 EPOCHS = 30
 datagen = 30
 
-DATA_DIR = f"rsna-pneumonia-detector/processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}-{datagen}"
-DENSENET_MODEL_DIR = f"rsna-pneumonia-detector/models/densenet/densenet_model_fine-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
-RESENET_MODEL_DIR = f"rsna-pneumonia-detector/models/resnet/resnet_model_fine-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
+DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}-{datagen}"
+DENSENET_MODEL_DIR = f"models/densenet/densenet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
+RESENET_MODEL_DIR = f"models/resnet/resnet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
 
 # Load the test data
 print("Loading the test data...")
