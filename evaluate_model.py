@@ -15,11 +15,10 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 IMAGE_NUMBER = 2000
 IMAGE_SIZE = 224
 EPOCHS = 30
-datagen = 30
 
-DATA_DIR = f"rsna-pneumonia-detector/processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}-{datagen}" 
-# MODEL_DIR = f"rsna-pneumonia-detector/models/resnet/resnet_model_fine-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
-MODEL_DIR = f"rsna-pneumonia-detector/models/densenet/densenet_model_fine-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}-50.keras"
+DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}" 
+MODEL_DIR = f"models/resnet/resnet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
+# MODEL_DIR = f"models/densenet/densenet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
 
 # Load the pre-trained model that was saved during training
 print("Loading Model...")
