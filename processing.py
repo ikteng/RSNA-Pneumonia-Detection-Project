@@ -17,11 +17,12 @@ import seaborn as sns
 # pip install -r requirements.txt
 
 # Constants
-IMAGE_NUMBER = 2000  # Number of images to process
+IMAGE_NUMBER = 4000  # Number of images to process
 IMAGE_SIZE = 224
 ZIP_FILE = "rsna-pneumonia-detection-challenge.zip"  # Path to the zip file
 EXTRACT_DIR = "data"  # Directory to extract the zip file contents
 SAVE_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"  # Directory to save processed data
+TEST_DIR = f"test_images_{IMAGE_SIZE}.npy"
 
 # Ensure output directories exist
 os.makedirs(SAVE_DIR, exist_ok=True)
@@ -140,8 +141,23 @@ def load_test_images():
 
     print("Saving test images...")
     # Save the processed images to a .npy file
-    np.save(f'test_images_{IMAGE_SIZE}.npy', test_images)
-    print(f"Test images saved successfully as 'test_images_{IMAGE_SIZE}.npy'.")
+    np.save(TEST_DIR, test_images)
+    print(f"Test images saved successfully as '{TEST_DIR}'.")
+
+# def analyze_pixel_distribution(images):
+#     """
+#     Analyze the distribution of pixel values in the given images.
+
+#     Parameters:
+#         images (numpy.ndarray): Array of images.
+#     """
+#     # Flatten the images to a 1D array for easier analysis
+#     flat_images = images.reshape(-1)
+#     plt.hist(flat_images, bins=50, density=True)
+#     plt.xlabel('Pixel Value')
+#     plt.ylabel('Density')
+#     plt.title('Pixel Value Distribution')
+#     plt.show()
 
 def analyze_pixel_distribution(images):
     """
@@ -152,24 +168,19 @@ def analyze_pixel_distribution(images):
     """
     # Flatten the images to a 1D array for easier analysis
     flat_images = images.reshape(-1)
+
+    # Use numpy's histogram function to get bin counts and bin edges
+    bin_counts, bin_edges = np.histogram(flat_images, bins=50, density=True)
+
+    # Print the bin counts and corresponding pixel value ranges
+    for i in range(len(bin_counts)):
+        print(f"Pixel value range: ({bin_edges[i]:.4f}, {bin_edges[i + 1]:.4f}) - Frequency: {bin_counts[i]:.4f}")
+
     plt.hist(flat_images, bins=50, density=True)
     plt.xlabel('Pixel Value')
     plt.ylabel('Density')
     plt.title('Pixel Value Distribution')
     plt.show()
-
-def analyze_image_dimensions(images):
-    """
-    Analyze the dimensions of the given images.
-
-    Parameters:
-        images (numpy.ndarray): Array of images.
-    """
-    dimensions = [img.shape for img in images]
-    unique_dimensions = set(dimensions)
-    print(f"Unique image dimensions found: {unique_dimensions}")
-    if len(unique_dimensions) > 1:
-        print("Warning: There are images with different dimensions!")
 
 def analyze_label_distribution(labels):
     """
@@ -201,7 +212,7 @@ def prepare_data():
         raise FileNotFoundError(f"Labels file not found: {labels_file}")
 
     # Step 4: Load Test images
-    load_test_images() # uncomment this to load the test images!
+    # load_test_images() # uncomment this to load the test images!
 
     # Step 5: Load labels
     labels = pd.read_csv(labels_file)
@@ -221,8 +232,6 @@ def prepare_data():
 
     # Add EDA for pixel value distribution
     analyze_pixel_distribution(images)
-    # Add EDA for image dimensions
-    analyze_image_dimensions(images)
 
     # Step 7: Split and handle class imbalance
     X_train, X_val, y_train, y_val = train_test_split(images, labels_filtered, test_size=0.2, stratify=labels_filtered)
