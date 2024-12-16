@@ -3,3 +3,4 @@
 rsna-pneumonia-detection-challenge.zip
 test_images_224.npy
 /processed_data
+/models
