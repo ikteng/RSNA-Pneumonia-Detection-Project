@@ -4,13 +4,11 @@ from tensorflow.keras.models import load_model
 import pandas as pd
 
 # Constants for configuring the data and model paths
-IMAGE_NUMBER = 2000
 IMAGE_SIZE = 224
 EPOCHS = 30
-datagen = 30
 
-DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}-{datagen}"
-DENSENET_MODEL_DIR = f"models/densenet/densenet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}-{datagen}.keras"
+DATA_DIR = f"processed_data/processed_data_{IMAGE_SIZE}"
+DENSENET_MODEL_DIR = f"models/densenet/densenet_model-{IMAGE_SIZE}-{EPOCHS}.keras"
 
 # Load the test data
 print("Loading the test data...")

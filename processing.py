@@ -15,14 +15,14 @@ import seaborn as sns
 
 # pip freeze > requirements.txt
 # pip install -r requirements.txt
+# pip install --no-cache-dir tensorflow imblearn
 
 # Constants
-IMAGE_NUMBER = 2000  # Number of images to process
 IMAGE_SIZE = 224
 ZIP_FILE = "rsna-pneumonia-detection-challenge.zip"  # Path to the zip file
 EXTRACT_DIR = "data"  # Directory to extract the zip file contents
-SAVE_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"  # Directory to save processed data
-TEST_DIR = f"test_images_{IMAGE_SIZE}.npy"
+SAVE_DIR = f"processed_data/processed_data_{IMAGE_SIZE}"  # Directory to save processed data
+TEST_DIR = f"./test_images_{IMAGE_SIZE}.npy"
 
 # Ensure output directories exist
 os.makedirs(SAVE_DIR, exist_ok=True)
@@ -45,7 +45,7 @@ def extract_zip(zip_file, extract_to):
         print(f"Dataset already extracted at {extract_to}.")
 
 # Function to load and preprocess images
-def load_images(dicom_dir, labels, num_samples, target_size=(IMAGE_SIZE, IMAGE_SIZE), augment=False):
+def load_images(dicom_dir, labels, target_size=(IMAGE_SIZE, IMAGE_SIZE), augment=False):
     dicom_files = [f for f in os.listdir(dicom_dir) if f.endswith('.dcm')]
     print(f"Total DICOM files found: {len(dicom_files)}")
 
@@ -63,7 +63,7 @@ def load_images(dicom_dir, labels, num_samples, target_size=(IMAGE_SIZE, IMAGE_S
 
     ) if augment else ImageDataGenerator()
 
-    for file_name in tqdm(dicom_files[:num_samples], desc="Processing DICOM Files"):
+    for file_name in tqdm(dicom_files, desc="Processing DICOM Files"):
         file_path = os.path.join(dicom_dir, file_name)
         try:
             dicom = pydicom.dcmread(file_path)
@@ -144,29 +144,6 @@ def load_test_images():
     np.save(TEST_DIR, test_images)
     print(f"Test images saved successfully as '{TEST_DIR}'.")
 
-def analyze_pixel_distribution(images):
-    """
-    Analyze the distribution of pixel values in the given images.
-
-    Parameters:
-        images (numpy.ndarray): Array of images.
-    """
-    # Flatten the images to a 1D array for easier analysis
-    flat_images = images.reshape(-1)
-
-    # # Use numpy's histogram function to get bin counts and bin edges
-    # bin_counts, bin_edges = np.histogram(flat_images, bins=50, density=True)
-
-    # # Print the bin counts and corresponding pixel value ranges
-    # for i in range(len(bin_counts)):
-    #     print(f"Pixel value range: ({bin_edges[i]:.4f}, {bin_edges[i + 1]:.4f}) - Frequency: {bin_counts[i]:.4f}")
-
-    plt.hist(flat_images, bins=50, density=True)
-    plt.xlabel('Pixel Value')
-    plt.ylabel('Density')
-    plt.title('Pixel Value Distribution')
-    plt.show()
-
 def analyze_label_distribution(labels):
     """
     Analyze the distribution of labels using a bar plot.
@@ -197,26 +174,23 @@ def prepare_data():
         raise FileNotFoundError(f"Labels file not found: {labels_file}")
 
     # Step 4: Load Test images
-    # load_test_images() # uncomment this to load the test images!
+    load_test_images() # uncomment this to load the test images!
 
     # Step 5: Load labels
     labels = pd.read_csv(labels_file)
     print(f"Total labels: {len(labels)}")
     print(f"Label distribution:\n{labels['Target'].value_counts()}")
-    # Add EDA for label distribution
-    analyze_label_distribution(labels['Target'])
+    # # EDA for label distribution
+    # analyze_label_distribution(labels['Target'])
 
     # Step 6: Load and preprocess images
-    images, labels_filtered = zip(*load_images(dicom_dir, labels, IMAGE_NUMBER))
+    images, labels_filtered = zip(*load_images(dicom_dir, labels))
     images = np.array(images, dtype=np.float32)
     labels_filtered = np.array(labels_filtered, dtype=np.int32)
 
     print(f"Total images processed: {len(images)}")
     print(f"Images shape: {images.shape}")
     print(f"Labels shape: {labels_filtered.shape}")
-
-    # Add EDA for pixel value distribution
-    analyze_pixel_distribution(images)
 
     # Step 7: Split and handle class imbalance
     X_train, X_val, y_train, y_val = train_test_split(images, labels_filtered, test_size=0.2, stratify=labels_filtered)
@@ -231,18 +205,10 @@ def prepare_data():
     np.save(os.path.join(SAVE_DIR, "X_val.npy"), X_val)
     np.save(os.path.join(SAVE_DIR, "y_val.npy"), y_val)
 
-    # Step 9: Apply SMOTE for the training set
-    print("Applying SMOTE...")
-    smote = SMOTE(sampling_strategy='auto', random_state=42)
-    X_train_res, y_train_res = smote.fit_resample(X_train.reshape(X_train.shape[0], -1), y_train)
-    X_train_res = X_train_res.reshape(-1, IMAGE_SIZE, IMAGE_SIZE, 3)
-
-    print(f"Resampled training set class distribution:\n{pd.Series(y_train_res).value_counts()}")
-
-    # Step 10: Save training sets
+    # Step 9: Save training sets
     print("Saving Training sets...")
-    np.save(os.path.join(SAVE_DIR, "X_train.npy"), X_train_res)
-    np.save(os.path.join(SAVE_DIR, "y_train.npy"), y_train_res)
+    np.save(os.path.join(SAVE_DIR, "X_train.npy"), X_train)
+    np.save(os.path.join(SAVE_DIR, "y_train.npy"), y_train)
     print("Saved Training sets successfully!")
 
     print("Data preparation complete!")

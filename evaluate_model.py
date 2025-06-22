@@ -12,14 +12,13 @@ from tqdm import tqdm
 # Set environment variable to disable GPU (useful if no GPU is available or to avoid using GPU)
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
-IMAGE_NUMBER = 2000
 IMAGE_SIZE = 224
 EPOCHS = 30
 
-DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}" 
-MODEL_DIR = f"models/densenet_kfold/densenet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
+DATA_DIR = f"processed_data/processed_data_{IMAGE_SIZE}" 
+MODEL_DIR = f"models/densenet/densenet_model-{IMAGE_SIZE}-{EPOCHS}.keras"
 
-# Load the pre-trained model that was saved during training
+# Load the model
 print("Loading Model...")
 model = load_model(MODEL_DIR)  # Load the model from the file
 print("Model Loaded Successfully!")  # Confirmation message once the model is loaded
@@ -29,12 +28,6 @@ model.summary()
 
 def run_evaluation():
    """Evaluate the model on the validation dataset."""
-   # Load model
-   print("Loading Model...")
-   model = load_model(MODEL_DIR)
-   print(f"Model path: ", MODEL_DIR)
-   print("Model Loaded Successfully!")
-
    # Load validation dataset
    print("Loading Validation Data...")
    X_val = np.load(os.path.join(DATA_DIR, "X_val.npy"))

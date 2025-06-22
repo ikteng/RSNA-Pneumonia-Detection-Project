@@ -1,6 +1,5 @@
-
-/data
+.venv
 rsna-pneumonia-detection-challenge.zip
-test_images_224.npy
+/data
 /processed_data
-/models
+test_images_224.npy
