@@ -13,10 +13,6 @@ Note: You need to use at most Python 3.11 for the tensorflow library!
   * `load_images` loads DICOM images from a given directory (`dicom_dir`). It allows for data augmentation (such as rotation, shifting, flipping, adjusting brightness and contrast) based on a specified flag. The function also associates each image with its corresponding label from a provided labels dataframe.
   * `load_test_images` is dedicated to loading and preprocessing test images. It converts grayscale images to RGB format, normalizes pixel values, resizes them, and saves the processed test images as a `.npy` file.
 
-* **Exploratory Data Analysis (EDA)**:
-  * `analyze_pixel_distribution` visualizes the distribution of pixel values in the images.
-  * `analyze_label_distribution` plots the distribution of labels in the dataset.
-
 * **Data Preparation Pipeline**: The `prepare_data` function orchestrates the entire data preparation process. It extracts the data, loads and preprocesses the images, performs EDA, splits the dataset into training and validation sets, handles class imbalance using SMOTE, and finally saves the processed datasets as `.npy` files in the `SAVE_DIR`.
 
 ### 2. densenet_model.py
