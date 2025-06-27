@@ -1,31 +1,56 @@
 # predictions.py
+import os
 import numpy as np
 from tensorflow.keras.models import load_model
+from tensorflow.keras.applications.densenet import preprocess_input
 import pandas as pd
+from tqdm import tqdm
+import pydicom
+import cv2
 
-# Constants for configuring the data and model paths
-IMAGE_SIZE = 224
+IMAGE_SIZE = 128
+IMAGE_NUMBER = 4000
 EPOCHS = 30
 
-DATA_DIR = f"processed_data/processed_data_{IMAGE_SIZE}"
-DENSENET_MODEL_DIR = f"models/densenet/densenet_model-{IMAGE_SIZE}-{EPOCHS}.keras"
+model = "densenet"
+model_name = f"{model}_model"
+
+DATA_DIR = f"processed_data/{model}/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
+MODEL_DIR = f"models/{model_name}-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
+PRED_DIR = "predictions"
+os.makedirs(PRED_DIR, exist_ok=True)
+
+def load_test_images():
+    test_image_dir = os.path.join("data", "stage_2_test_images")
+    dicom_files = [f for f in os.listdir(test_image_dir) if f.endswith('.dcm')]
+    print(f"Total DICOM files found: {len(dicom_files)}")
+
+    test_images = []
+    for file_name in tqdm(dicom_files, desc="Loading DICOM Files"):
+        file_path = os.path.join(test_image_dir, file_name)
+        try:
+            dicom = pydicom.dcmread(file_path)
+            img = dicom.pixel_array.astype(np.float32)
+            img = cv2.resize(img, (IMAGE_SIZE, IMAGE_SIZE))
+            img = np.stack([img] * 3, axis=-1)
+            img = preprocess_input(img)
+            test_images.append(img.astype(np.float16))
+        except Exception as e:
+            print(f"Error processing {file_name}: {e}")
+
+    return np.array(test_images, dtype=np.float16)
 
 # Load the test data
 print("Loading the test data...")
-X_test = np.load(f"test_images_{IMAGE_SIZE}.npy")
+X_test = load_test_images()
 print("Test data loaded successfully.")
 
-# Load the pre-trained models
-print("Loading the pre-trained models...")
-# model = load_model(MODEL_DIR)
-densenet_model = load_model(DENSENET_MODEL_DIR)
-# resnet_model = load_model(RESENET_MODEL_DIR)
-print("Pre-trained models loaded successfully.")
+# Load the model
+print("Loading the model...")
+model = load_model(MODEL_DIR)
+print("Model loaded successfully.")
 
 def run_prediction():
-    model = densenet_model
-    model_name = "densenet_model"
-
     print(f"Generating predictions using {model_name}...")
     test_predictions = model.predict(X_test)
     pred_class = (test_predictions > 0.5).astype(int)
@@ -48,8 +73,8 @@ def run_prediction():
     prediction_df = pd.DataFrame(prediction_data, columns=columns)
 
     print("Saving detailed prediction data for single model predictions to a file...")
-    prediction_df.to_csv(f"{model_name}_predictions.csv", index=False)
-    print(f"File '{model_name}_predictions.csv' with detailed predictions has been created successfully!")
+    prediction_df.to_csv(f"{PRED_DIR}/{model_name}_predictions.csv", index=False)
+    print(f"File '{PRED_DIR}/{model_name}_predictions.csv' with detailed predictions has been created successfully!")
 
 if __name__ == "__main__":
     run_prediction()
