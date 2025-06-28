@@ -8,18 +8,17 @@ import cv2
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
-# from tensorflow.keras.applications.densenet import preprocess_input
-from tensorflow.keras.applications.efficientnet import preprocess_input
-import tensorflow.keras.backend as K
+from tensorflow.keras.applications.densenet import preprocess_input
 import gc
+import tensorflow.keras.backend as K
 
-IMAGE_SIZE = 256
+IMAGE_SIZE = 224
 IMAGE_NUMBER = 8000
 
 ZIP_FILE = "rsna-pneumonia-detection-challenge.zip"
 EXTRACT_DIR = "data"
-MODEL = "efficientnet"
-SAVE_DIR = f"processed_data/{MODEL}/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
+MODEL = "densenet"
+SAVE_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
 
 os.makedirs(SAVE_DIR, exist_ok=True)
 

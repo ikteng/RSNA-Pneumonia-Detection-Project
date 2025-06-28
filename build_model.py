@@ -3,28 +3,27 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from tensorflow.keras import layers, models
 from tensorflow.keras.applications import DenseNet121
-# from tensorflow.keras.applications import EfficientNetB4
+from tensorflow.keras import layers, models, regularizers
+from tensorflow.keras import Input, Model
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.optimizers import Adam
 from sklearn.utils.class_weight import compute_class_weight
-from tensorflow.keras import regularizers
-import gc  # garbage collector
+import gc
 import tensorflow.keras.backend as K
 
 # Disable ONEDNN for CPU compatibility
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 IMAGE_SIZE = 224
-IMAGE_NUMBER = 4000
-EPOCHS = 30
+IMAGE_NUMBER = 8000
+EPOCHS = 50
 BATCH_SIZE = 64
 
 model = "densenet"
 model_name = f"{model}_model"
 
-DATA_DIR = f"processed_data/{model}/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
+DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
 MODEL_PATH = f"models/{model_name}-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
 
 def clear_memory():
@@ -51,26 +50,28 @@ y_val = val_data["y"]
 print("Building model...")
 # Build the model
 def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), l2_reg=0.001):
-    base_model = DenseNet121(weights="imagenet", include_top=False, input_shape=input_shape)
+    inputs = Input(shape=input_shape)
+    base_model = DenseNet121(weights="imagenet", include_top=False, input_tensor=inputs)
+    
     # base_model.trainable = False  # Freeze all layers
 
     # Unfreeze the last few layers of the base model
-    for layer in base_model.layers[-100:]:
+    for layer in base_model.layers[-200:]:
         layer.trainable = True
     
-    model = models.Sequential([
-        base_model,
-        layers.GlobalAveragePooling2D(),
-        layers.BatchNormalization(),
-        layers.Dense(256, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
-        layers.Dropout(0.5),
-        layers.Dense(64, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
-        layers.Dropout(0.3),
-        layers.Dense(1, activation='sigmoid')
-    ])
+    x = base_model.output
+    x = layers.GlobalAveragePooling2D()(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dense(512, activation='relu', kernel_regularizer=regularizers.l2(l2_reg))(x)
+    x = layers.Dropout(0.5)(x)
+    x = layers.Dense(128, activation='relu', kernel_regularizer=regularizers.l2(l2_reg))(x)
+    x = layers.Dropout(0.3)(x)
+    outputs = layers.Dense(1, activation='sigmoid')(x)
+
+    model = Model(inputs=inputs, outputs=outputs)
 
     model.compile(
-        optimizer=Adam(learning_rate=1e-4),
+        optimizer=Adam(learning_rate=3e-5),
         loss='binary_crossentropy',
         metrics=['accuracy']
     )
@@ -83,7 +84,7 @@ class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y
 class_weight_dict = dict(enumerate(class_weights))
 
 # Callbacks
-early_stopping = EarlyStopping(monitor='val_accuracy', patience=5, mode='max', restore_best_weights=True)
+early_stopping = EarlyStopping(monitor='val_accuracy', patience=10, mode='max', restore_best_weights=True)
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=3, min_lr=1e-4)
 checkpoint = ModelCheckpoint(MODEL_PATH, monitor='val_accuracy', save_best_only=True, mode='max', verbose=1)
 
@@ -92,8 +93,12 @@ print("Training model...")
 
 def augment(image, label):
     image = tf.image.random_flip_left_right(image)
+    image = tf.image.random_flip_up_down(image)
     image = tf.image.random_brightness(image, 0.1)
-    image = tf.image.random_contrast(image, 0.9, 1.1)
+    image = tf.image.random_contrast(image, 0.8, 1.2)
+    image = tf.image.random_saturation(image, 0.8, 1.2)
+    image = tf.image.random_hue(image, 0.02)
+    image = tf.clip_by_value(image, 0.0, 1.0)
     return image, label
 
 train_dataset = (
