@@ -8,8 +8,8 @@ from sklearn.metrics import roc_auc_score, confusion_matrix, classification_repo
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 IMAGE_SIZE = 224
-IMAGE_NUMBER = 4000
-EPOCHS = 30
+IMAGE_NUMBER = 8000
+EPOCHS = 50
 
 model = "densenet"
 model_name = f"{model}_model"
