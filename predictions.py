@@ -8,14 +8,14 @@ from tqdm import tqdm
 import pydicom
 import cv2
 
-IMAGE_SIZE = 224
+IMAGE_SIZE = 128
 IMAGE_NUMBER = 4000
 EPOCHS = 30
 
 model = "densenet"
 model_name = f"{model}_model"
 
-DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
+DATA_DIR = f"processed_data/{model}/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
 MODEL_DIR = f"models/{model_name}-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
 PRED_DIR = "predictions"
 os.makedirs(PRED_DIR, exist_ok=True)

@@ -1,0 +1,41 @@
+densenet_model-2000-224-30.keras:
+
+Evaluation Results:
+Loss = 0.7981, Accuracy = 0.8375
+
+Classification Report:
+              precision    recall  f1-score   support
+
+No Pneumonia       0.87      0.90      0.88       271
+   Pneumonia       0.77      0.71      0.74       129
+
+    accuracy                           0.84       400
+   macro avg       0.82      0.80      0.81       400
+weighted avg       0.83      0.84      0.84       400
+
+AUC Score: 0.8835
+Confusion Matrix:
+[[244  27]
+ [ 38  91]]
+
+---------------------------------------------------------------------------------
+
+densenet_model_kfold-2000-224-30.keras:
+
+Evaluation Results:
+Loss = 0.9525, Accuracy = 0.8300
+
+Classification Report:
+              precision    recall  f1-score   support
+
+No Pneumonia       0.83      0.93      0.88       271
+   Pneumonia       0.81      0.61      0.70       129
+
+    accuracy                           0.83       400
+   macro avg       0.82      0.77      0.79       400
+weighted avg       0.83      0.83      0.82       400
+
+AUC Score: 0.8903
+Confusion Matrix:
+[[253  18]
+ [ 50  79]]

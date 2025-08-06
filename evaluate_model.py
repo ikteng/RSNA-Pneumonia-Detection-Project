@@ -14,7 +14,7 @@ EPOCHS = 30
 model = "densenet"
 model_name = f"{model}_model"
 
-DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
+DATA_DIR = f"processed_data/{model}/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
 MODEL_DIR = f"models/{model_name}-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
 
 # Load the model
@@ -36,7 +36,7 @@ def run_evaluation():
 
    # Generate predictions
    print("Generating Predictions on Validation Data...")
-   val_predictions = model.predict(X_val) # type: ignore
+   val_predictions = model.predict(X_val)
    pred_class = (val_predictions > 0.5).astype(int)
 
    print("Sample Predictions:")

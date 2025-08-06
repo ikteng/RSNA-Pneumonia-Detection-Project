@@ -41,15 +41,6 @@ This script evaluates a trained deep learning model (e.g., DenseNet) on the vali
   - Confusion Matrix
   - Classification Report (Precision, Recall, F1-Score)
 
-### 4. predictions.py
-This script uses a trained model to make predictions on the RSNA Pneumonia Detection Challenge test set. It processes raw DICOM images, applies the trained model, and saves the predictions with both predicted class labels and confidence scores.
-
-- Loads DICOM test images from the stage_2_test_images directory
-- Preprocesses images using preprocess_input for DenseNet
-- Loads the trained model
-- Generates binary predictions (0 or 1) and associated probabilities
-- Saves predictions to a CSV file
-
 # How to Use This Repository
 1. Clone the repository
   ```bash
