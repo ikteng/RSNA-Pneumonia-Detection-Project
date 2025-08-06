@@ -24,7 +24,7 @@ print("Pre-trained models loaded successfully.")
 
 def run_prediction():
     model = densenet_model
-    model_name = "densenet_model"
+    model_name = "densnet_model"
 
     print(f"Generating predictions using {model_name}...")
     test_predictions = model.predict(X_test)
