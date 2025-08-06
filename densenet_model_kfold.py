@@ -1,4 +1,4 @@
-# densenet_model_kfold.py
+# densenet_model.py
 import os
 import numpy as np
 import tensorflow as tf
