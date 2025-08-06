@@ -1,7 +1,6 @@
 # densenet_model.py
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.applications import DenseNet121
@@ -9,18 +8,20 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCh
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.metrics import Precision, Recall
 from sklearn.utils.class_weight import compute_class_weight
+import matplotlib.pyplot as plt
 from tensorflow.keras.regularizers import l2
+import gc
 from tensorflow.keras import backend as K
 
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
-
 # Constants
+IMAGE_NUMBER = 4000
 IMAGE_SIZE = 224
-EPOCHS = 30
-BATCH_SIZE = 64
 
-DATA_DIR = f"processed_data/processed_data_{IMAGE_SIZE}"
-MODEL_PATH = f"models/densenet/densenet_model-{IMAGE_SIZE}-{EPOCHS}.keras"
+EPOCHS = 30
+BATCH_SIZE = 32
+
+DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
+MODEL_PATH = f"models/densenet/densenet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
 
 # Load data
 print("Loading data...")
