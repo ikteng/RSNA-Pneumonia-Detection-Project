@@ -2,4 +2,5 @@
 rsna-pneumonia-detection-challenge.zip
 /data
 /processed_data
-/predictions
+test_images_224.npy
+densenet_model_predictions.csv
