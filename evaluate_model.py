@@ -8,34 +8,21 @@ from tensorflow.keras.preprocessing import image
 import pydicom
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from preprocessing import DATA_DIR
+from densenet_model import MODEL_PATH, EPOCHS
 
 # Set environment variable to disable GPU (useful if no GPU is available or to avoid using GPU)
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
-IMAGE_NUMBER = 2000
-IMAGE_SIZE = 224
-EPOCHS = 30
-
-DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}" 
-# MODEL_DIR = f"models/resnet/resnet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
-MODEL_DIR = f"models/densenet/densenet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
 
 # Load the pre-trained model that was saved during training
 print("Loading Model...")
-model = load_model(MODEL_DIR)  # Load the model from the file
+model = load_model(MODEL_PATH)  # Load the model from the file
 print("Model Loaded Successfully!")  # Confirmation message once the model is loaded
 
-# Summary of the model
-model.summary()
 
 def run_evaluation():
    """Evaluate the model on the validation dataset."""
-   # Load model
-   print("Loading Model...")
-   model = load_model(MODEL_DIR)
-   print(f"Model path: ", MODEL_DIR)
-   print("Model Loaded Successfully!")
-
    # Load validation dataset
    print("Loading Validation Data...")
    X_val = np.load(os.path.join(DATA_DIR, "X_val.npy"))
@@ -68,4 +55,6 @@ def run_evaluation():
    cm = confusion_matrix(y_val, pred_class)
    print(cm)
 
-run_evaluation()
+if __name__ == "__main__":
+   model.summary()
+   run_evaluation()

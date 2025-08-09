@@ -12,15 +12,12 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.regularizers import l2
 import gc
 from tensorflow.keras import backend as K
+from preprocessing import IMAGE_NUMBER, IMAGE_SIZE, DATA_DIR
 
-# Constants
-IMAGE_NUMBER = 4000
-IMAGE_SIZE = 224
 
 EPOCHS = 30
 BATCH_SIZE = 32
 
-DATA_DIR = f"processed_data/processed_data_{IMAGE_NUMBER}-{IMAGE_SIZE}"
 MODEL_PATH = f"models/densenet/densenet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
 
 # Load data
@@ -68,40 +65,41 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), l2_reg=0.001):
 
     return model
 
-print("Building model...")
-model = build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), l2_reg=0.001)
+if __name__ == "__main__":
+    print("Building model...")
+    model = build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), l2_reg=0.001)
 
-# Callbacks
-early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=5, min_lr=1e-6)
-checkpoint = ModelCheckpoint(MODEL_PATH, monitor='val_loss', save_best_only=True, mode='min', verbose=1)
+    # Callbacks
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=5, min_lr=1e-6)
+    checkpoint = ModelCheckpoint(MODEL_PATH, monitor='val_loss', save_best_only=True, mode='min', verbose=1)
 
-# Learning rate scheduler using cosine annealing
-def cosine_annealing_schedule(epoch, lr):
-    eta_min = 1e-6
-    eta_max = 1e-3
-    T_max = EPOCHS
-    return eta_min + 0.5 * (eta_max - eta_min) * (1 + np.cos(np.pi * epoch / T_max))
+    # Learning rate scheduler using cosine annealing
+    def cosine_annealing_schedule(epoch, lr):
+        eta_min = 1e-6
+        eta_max = 1e-3
+        T_max = EPOCHS
+        return eta_min + 0.5 * (eta_max - eta_min) * (1 + np.cos(np.pi * epoch / T_max))
 
-lr_scheduler = LearningRateScheduler(cosine_annealing_schedule)
+    lr_scheduler = LearningRateScheduler(cosine_annealing_schedule)
 
-# Compute class weights
-class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
-class_weight_dict = dict(enumerate(class_weights))
+    # Compute class weights
+    class_weights = compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
+    class_weight_dict = dict(enumerate(class_weights))
 
-# Train model
-print("Training model...")
-history = model.fit(
-    X_train, y_train,
-    validation_data=(X_val, y_val),
-    epochs=EPOCHS,
-    batch_size=BATCH_SIZE,
-    class_weight=class_weight_dict,
-    callbacks=[early_stopping, reduce_lr, checkpoint, lr_scheduler]
-)
+    # Train model
+    print("Training model...")
+    history = model.fit(
+        X_train, y_train,
+        validation_data=(X_val, y_val),
+        epochs=EPOCHS,
+        batch_size=BATCH_SIZE,
+        class_weight=class_weight_dict,
+        callbacks=[early_stopping, reduce_lr, checkpoint, lr_scheduler]
+    )
 
-# Cleanup
-del model  # Deletes the model object
-del X_val, y_val  # Deletes dataset variables
-gc.collect()  # Forces garbage collection
-K.clear_session()
+    # Cleanup
+    del model  # Deletes the model object
+    del X_val, y_val  # Deletes dataset variables
+    gc.collect()  # Forces garbage collection
+    K.clear_session()
