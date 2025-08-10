@@ -2,59 +2,58 @@
 import os
 import numpy as np
 from tensorflow.keras.models import load_model
-from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score, confusion_matrix, classification_report
-import random
-from tensorflow.keras.preprocessing import image
-import pydicom
-import matplotlib.pyplot as plt
-from tqdm import tqdm
+from sklearn.metrics import roc_auc_score, classification_report, confusion_matrix, recall_score, precision_score, f1_score
 from preprocessing import DATA_DIR
-from densenet_model import MODEL_PATH, EPOCHS
+from densenet_model import MODEL_PATH
 
-# Set environment variable to disable GPU (useful if no GPU is available or to avoid using GPU)
+# Disable GPU
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
-
-# Load the pre-trained model that was saved during training
+# Load model
 print("Loading Model...")
-model = load_model(MODEL_PATH)  # Load the model from the file
-print("Model Loaded Successfully!")  # Confirmation message once the model is loaded
+print("Model: ", MODEL_PATH)
+model = load_model(MODEL_PATH)
+print("Model Loaded Successfully!")
 
-
-def run_evaluation():
-   """Evaluate the model on the validation dataset."""
-   # Load validation dataset
+def run_threshold_tuning():
    print("Loading Validation Data...")
    X_val = np.load(os.path.join(DATA_DIR, "X_val.npy"))
    y_val = np.load(os.path.join(DATA_DIR, "y_val.npy"))
    print(f"Validation Data Loaded: {X_val.shape}, {y_val.shape}")
 
-   # Generate predictions
-   print("Generating Predictions on Validation Data...")
-   val_predictions = model.predict(X_val)
-   pred_class = (val_predictions > 0.5).astype(int)
+   # Get predicted probabilities
+   print("Generating Predictions...")
+   val_probs = model.predict(X_val).ravel()
 
-   print("Sample Predictions:")
-   for i in range(5):  # Show a few predictions
-      print(f"Predicted: {pred_class[i][0]}, Probability: {val_predictions[i][0]:.4f}, True label: {y_val[i]}")
+   best_threshold = 0.5
+   best_f1 = 0
+   results = []
 
-   # Evaluate the model
-   print("Evaluating Model...")
-   evaluation_metrics = model.evaluate(X_val, y_val, verbose=1)
-   print(f"Evaluation Results:\nLoss = {evaluation_metrics[0]:.4f}, Accuracy = {evaluation_metrics[1]:.4f}")
+   for threshold in np.arange(0.0, 1.01, 0.01):
+      preds = (val_probs >= threshold).astype(int)
+      recall = recall_score(y_val, preds, zero_division=0)
+      precision = precision_score(y_val, preds, zero_division=0)
+      f1 = f1_score(y_val, preds, zero_division=0)
+      results.append((threshold, recall, precision, f1))
 
-   print("\nClassification Report:")
-   cr = classification_report(y_val, pred_class, target_names=["No Pneumonia", "Pneumonia"])
-   print(cr)
+      if f1 > best_f1:
+         best_f1 = f1
+         best_threshold = threshold
 
-   auc_score = roc_auc_score(y_val, val_predictions)
-   print(f"AUC Score: {auc_score:.4f}")
+   # Evaluate with best threshold
+   final_preds = (val_probs >= best_threshold).astype(int)
+   auc_score = roc_auc_score(y_val, val_probs)
+   cm = confusion_matrix(y_val, final_preds)
+   report = classification_report(y_val, final_preds, target_names=["No Pneumonia", "Pneumonia"])
 
-   # Calculate additional metrics
-   print("Confusion Matrix:")
-   cm = confusion_matrix(y_val, pred_class)
-   print(cm)
+   print("\nBest Threshold (Max F1):", round(best_threshold, 2))
+   print("Best F1 Score:", round(best_f1, 4))
+   print("AUC Score:", round(auc_score, 4))
+   print("\nClassification Report:\n", report)
+   print("Confusion Matrix:\n", cm)
+
+   return results
 
 if __name__ == "__main__":
-   model.summary()
-   run_evaluation()
+   # model.summary()
+   tuning_results = run_threshold_tuning()

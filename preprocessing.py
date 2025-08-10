@@ -1,4 +1,4 @@
-# processing.py
+# preprocessing.py
 import os
 import numpy as np
 import pandas as pd
@@ -29,10 +29,6 @@ os.makedirs(DATA_DIR, exist_ok=True)
 def extract_zip(zip_file, extract_to):
     """
     Extract a zip file to a specified directory.
-    
-    Parameters:
-        zip_file (str): Path to the zip file.
-        extract_to (str): Path to the extraction directory.
     """
     if not os.path.exists(extract_to):
         print(f"Extracting {zip_file} to {extract_to}...")
@@ -48,16 +44,16 @@ def load_images(dicom_dir, labels, num_samples, target_size=(IMAGE_SIZE, IMAGE_S
     print(f"Total DICOM files found: {len(dicom_files)}")
 
     datagen = ImageDataGenerator(
-        rotation_range=30,  # Increased rotation range
+        rotation_range=30,
         width_shift_range=0.2,
         height_shift_range=0.2,
         shear_range=0.2,
         zoom_range=0.2,
         horizontal_flip=True,
-        vertical_flip=True,  # Add vertical flip for more variation
+        vertical_flip=True,
         fill_mode="nearest",
-        brightness_range=[0.6, 1.4],  # Broaden the brightness range
-        contrast_range=[0.8, 1.2]  # Add contrast adjustment
+        brightness_range=[0.6, 1.4],
+        contrast_range=[0.8, 1.2]
 
     ) if augment else ImageDataGenerator()
 

@@ -1,19 +1,24 @@
-densenet_model-4000-224-30:
 
-Evaluation Results:
-Loss = 0.6156, Accuracy = 0.8200
+---------------------------------------------------------------
+
+densenet_model-4000-224-30.keras:
+
+Best Threshold (Max F1): 0.35
+Best F1 Score: 0.7728
+AUC Score: 0.9152
 
 Classification Report:
-              precision    recall  f1-score   support
+               precision    recall  f1-score   support
 
-No Pneumonia       0.82      0.92      0.87       518 
-   Pneumonia       0.82      0.63      0.71       282 
+No Pneumonia       0.87      0.88      0.88       518 
+   Pneumonia       0.78      0.77      0.77       282 
 
-    accuracy                           0.82       800 
-   macro avg       0.82      0.78      0.79       800 
-weighted avg       0.82      0.82      0.81       800 
+    accuracy                           0.84       800 
+   macro avg       0.83      0.82      0.83       800 
+weighted avg       0.84      0.84      0.84       800 
 
-AUC Score: 0.8798
 Confusion Matrix:
-[[478  40]
- [104 178]]
+ [[457  61]
+ [ 66 216]]
+
+---------------------------------------------------------------

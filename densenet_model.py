@@ -20,24 +20,11 @@ BATCH_SIZE = 32
 
 MODEL_PATH = f"models/densenet/densenet_model-{IMAGE_NUMBER}-{IMAGE_SIZE}-{EPOCHS}.keras"
 
-# Load data
-print("Loading data...")
-X_train = np.load(os.path.join(DATA_DIR, "X_train.npy"))
-X_val = np.load(os.path.join(DATA_DIR, "X_val.npy"))
-y_train = np.load(os.path.join(DATA_DIR, "y_train.npy"))
-y_val = np.load(os.path.join(DATA_DIR, "y_val.npy"))
-
-# Display data shapes
-print(f"X_train shape: {X_train.shape}")
-print(f"X_val shape: {X_val.shape}")
-print(f"y_train shape: {y_train.shape}")
-print(f"y_val shape: {y_val.shape}")
-
 # Build model function with modifications
 def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), l2_reg=0.001):
     base_model = DenseNet121(weights='imagenet', include_top=False, input_shape=input_shape)
     # Unfreeze the last few layers of the base model
-    for layer in base_model.layers[-30:]:  # Adjust the number of layers to unfreeze as needed
+    for layer in base_model.layers[-30:]: 
         layer.trainable = True
 
     # layer.trainable = False
@@ -47,7 +34,7 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), l2_reg=0.001):
         layers.GlobalAveragePooling2D(),
         layers.BatchNormalization(),
         layers.Dropout(0.3),
-        layers.Dense(512, activation='relu', kernel_regularizer=l2(l2_reg)),  # Increased units
+        layers.Dense(512, activation='relu', kernel_regularizer=l2(l2_reg)), 
         layers.BatchNormalization(),
         layers.Dropout(0.3),
         layers.Dense(256, activation='relu', kernel_regularizer=l2(l2_reg)),
@@ -56,7 +43,7 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), l2_reg=0.001):
         layers.Dense(1, activation='sigmoid')
     ])
 
-    optimizer = Adam(learning_rate=1e-4)  # Use a lower learning rate for fine-tuning
+    optimizer = Adam(learning_rate=1e-4) 
     model.compile(
         optimizer=optimizer,
         loss='binary_crossentropy',
@@ -66,6 +53,19 @@ def build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), l2_reg=0.001):
     return model
 
 if __name__ == "__main__":
+    # Load data
+    print("Loading data...")
+    X_train = np.load(os.path.join(DATA_DIR, "X_train.npy"))
+    X_val = np.load(os.path.join(DATA_DIR, "X_val.npy"))
+    y_train = np.load(os.path.join(DATA_DIR, "y_train.npy"))
+    y_val = np.load(os.path.join(DATA_DIR, "y_val.npy"))
+
+    # Display data shapes
+    print(f"X_train shape: {X_train.shape}")
+    print(f"X_val shape: {X_val.shape}")
+    print(f"y_train shape: {y_train.shape}")
+    print(f"y_val shape: {y_val.shape}")
+
     print("Building model...")
     model = build_model(input_shape=(IMAGE_SIZE, IMAGE_SIZE, 3), l2_reg=0.001)
 
